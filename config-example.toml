@@ -1,0 +1,7 @@
+[[groups.group-a]]
+name = "proxy-a"
+url = "vless://<uuid>@<host>:<port>?encryption=none&security=tls&type=grpc&host=<host>&path=<path>&fp=chrome&serviceName=<service-name>&alpn=h2&sni=<host>"
+
+[[groups.group-b]]
+name = "proxy-b"
+url = "trojan://<password>@<host>:<port>?encryption=none&peer=<host>&fp=chrome&security=tls&type=grpc&sni=<host>&alpn=h2&path=<path>&serviceName=<service-name>"

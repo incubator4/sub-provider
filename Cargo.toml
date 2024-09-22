@@ -1,0 +1,16 @@
+[package]
+name = "sub-provider"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dotenvy = "^0.15.0"
+thiserror = "1.0"
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1"
+url = "2"
+toml = "0.5.2"
+axum = { version = "0.7" }
+tokio = { version = "1.0", features = ["full"] }
+base64 = "0.22.1"
