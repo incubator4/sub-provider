@@ -28,6 +28,10 @@ async fn main() {
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     let lisenter = tokio::net::TcpListener::bind(&addr).await.unwrap();
 
+    // read the path prefix environment variable
+    let path_prefix = std::env::var("PATH_PREFIX").unwrap_or("/".to_string());
+    let app = Router::new().nest(&path_prefix, app);
+
     axum::serve(
         lisenter,
         app.into_make_service_with_connect_info::<SocketAddr>(),
