@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use super::BaseProxy;
+use super::common::BaseProxy;
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct Socks5 {
     #[serde(flatten)]

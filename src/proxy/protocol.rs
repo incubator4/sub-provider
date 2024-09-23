@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::util::is_false;
+use crate::{error::Error, util::get_query};
 use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize};
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "kebab-case")]
@@ -23,6 +24,45 @@ pub struct TLS {
 pub struct RealityOpts {
     pub public_key: String,
     pub short_id: String,
+}
+
+impl TryFrom<url::Url> for TLS {
+    type Error = Error;
+    fn try_from(value: url::Url) -> Result<Self, Self::Error> {
+        let security = get_query("security", &value).map(String::from);
+
+        let server_name = get_query("sni", &value).map(String::from);
+        let skip_cert_verify = get_query("skip_cert_verify", &value)
+            .map(|s| s.parse().unwrap())
+            .unwrap_or(false);
+
+        let alpn = match value.query_pairs().filter(|(k, _)| k == "alpn").next() {
+            Some((_, v)) => v.split(',').map(|s| s.to_string()).collect(),
+            None => vec![],
+        };
+
+        match security.as_ref().map(|s| s.as_str()) {
+            Some("tls") => Some(TLS {
+                server_name,
+                skip_cert_verify,
+                alpn,
+                tls: true,
+                reality_opts: None,
+            }),
+            Some("reality") => Some(TLS {
+                server_name,
+                skip_cert_verify,
+                alpn,
+                tls: true,
+                reality_opts: Some(RealityOpts {
+                    public_key: get_query("pbk", &value).unwrap_or_default(),
+                    short_id: get_query("sid", &value).unwrap_or_default(),
+                }),
+            }),
+            _ => None,
+        }
+        .ok_or(Error::InvalidTLS)
+    }
 }
 
 #[derive(Debug, Clone)]

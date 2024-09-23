@@ -1,8 +1,8 @@
-use super::{protocol::Network, BaseProxy};
+use super::{common::BaseProxy, protocol::Network};
 use crate::error::Error;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct Trojan {
     #[serde(flatten)]
@@ -32,11 +32,7 @@ impl TryFrom<url::Url> for Trojan {
             .unwrap_or(false);
 
         Ok(Trojan {
-            base: BaseProxy {
-                name: value.host_str().unwrap().to_string(),
-                server: value.host_str().unwrap().to_string(),
-                port: value.port().unwrap_or(443),
-            },
+            base: BaseProxy::try_from(value.clone())?,
             password: value.username().to_string(),
             alpn: match value.query_pairs().filter(|(k, _)| k == "alpn").next() {
                 Some((_, v)) => Some(v.split(',').map(|s| s.to_string()).collect()),

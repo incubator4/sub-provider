@@ -7,7 +7,7 @@ use std::net::SocketAddr;
 use sub_provider::{
     config::Config,
     provider::{clash::Clash, Provider},
-    proxy::from_raw_proxies,
+    proxy::Proxy,
 };
 
 #[tokio::main]
@@ -51,8 +51,14 @@ async fn clash() -> impl IntoResponse {
 
     let proxies = cfg
         .groups
-        .iter()
-        .map(|(key, item)| (key.clone(), from_raw_proxies(item.to_vec())))
+        .into_iter()
+        .map(|(key, items)| {
+            let proxies: Vec<Proxy> = items
+                .into_iter()
+                .filter_map(|item| Proxy::try_from(item).ok())
+                .collect();
+            (key, proxies)
+        })
         .collect();
 
     let clash = Clash::new().with_proxies(proxies);
@@ -66,8 +72,14 @@ async fn clash_meta() -> impl IntoResponse {
 
     let proxies = cfg
         .groups
-        .iter()
-        .map(|(key, item)| (key.clone(), from_raw_proxies(item.to_vec())))
+        .into_iter()
+        .map(|(key, items)| {
+            let proxies: Vec<Proxy> = items
+                .into_iter()
+                .filter_map(|item| Proxy::try_from(item).ok())
+                .collect();
+            (key, proxies)
+        })
         .collect();
 
     let clash = Clash::new().with_proxies(proxies);

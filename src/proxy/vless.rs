@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 
 use super::{
+    common::BaseProxy,
     protocol::{Network, RealityOpts, TLS},
-    BaseProxy,
 };
 
 use crate::util::get_query;
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct Vless {
     #[serde(flatten)]
@@ -34,12 +34,7 @@ impl TryFrom<url::Url> for Vless {
         let net = get_query("type", &value).map(String::from);
 
         Ok(Vless {
-            base: BaseProxy {
-                name: value.host_str().unwrap().to_string(),
-                server: value.host_str().unwrap().to_string(),
-                port: value.port().unwrap_or(443),
-            },
-
+            base: BaseProxy::try_from(value.clone())?,
             uuid: value.username().to_string(),
             flow: get_query("flow".into(), &value).unwrap_or_default(),
             // packet_encoding: None,

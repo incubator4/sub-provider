@@ -1,15 +1,9 @@
 use crate::error::Error;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct Config {
-    pub groups: HashMap<String, Vec<RawProxy>>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RawProxy {
-    pub name: String,
-    pub url: String,
+    pub groups: HashMap<String, Vec<String>>,
 }
 
 impl Config {

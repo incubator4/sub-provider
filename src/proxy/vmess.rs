@@ -1,12 +1,12 @@
 use core::str;
 
-use super::{protocol::Network, BaseProxy};
+use super::{common::BaseProxy, protocol::Network};
 use crate::error::Error;
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct Vmess {
     #[serde(flatten)]
@@ -42,9 +42,11 @@ impl TryFrom<url::Url> for Vmess {
 
         Ok(Vmess {
             base: BaseProxy {
-                name: "".into(),
+                name: value["ps"].as_str().unwrap().to_string(),
                 server: value["host"].as_str().unwrap().to_string(),
-                port: value["port"].as_u64().unwrap() as u16,
+                port: value["port"].as_u64().unwrap() as usize,
+                ip_version: None,
+                udp: false,
             },
             uuid: value["id"].as_str().unwrap().to_string(),
             alter_id: value["aid"].as_u64().unwrap() as u16,
