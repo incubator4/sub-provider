@@ -13,10 +13,15 @@ use sub_provider::{
 #[tokio::main]
 async fn main() {
     // build our application with a route
-    let app = Router::new()
-        .route("/", get(handler))
+    let provider = Router::new()
         .route("/clash", get(clash))
         .route("/clash-meta", get(clash_meta));
+
+    // read the path prefix environment variable
+    let path_prefix = std::env::var("PATH_PREFIX").unwrap_or("/".to_string());
+    let app = Router::new()
+        .route("/", get(handler))
+        .nest(&path_prefix, provider);
 
     // read the PORT environment variable
     let port = std::env::var("PORT")
@@ -27,10 +32,6 @@ async fn main() {
     // run it
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     let lisenter = tokio::net::TcpListener::bind(&addr).await.unwrap();
-
-    // read the path prefix environment variable
-    let path_prefix = std::env::var("PATH_PREFIX").unwrap_or("/".to_string());
-    let app = Router::new().nest(&path_prefix, app);
 
     axum::serve(
         lisenter,
