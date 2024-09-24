@@ -278,3 +278,42 @@ impl<'de> Deserialize<'de> for Network {
         }
     }
 }
+
+impl TryFrom<url::Url> for Network {
+    type Error = Error;
+    fn try_from(value: url::Url) -> Result<Self, Self::Error> {
+        let network_type = get_query("type", &value);
+
+        network_type
+            .clone()
+            .map(|s| match s.as_str() {
+                "grpc" => Some(Network::Grpc {
+                    grpc_service_name: get_query("serviceName", &value),
+                }),
+                "ws" => Some(Network::Ws {
+                    path: get_query("path", &value).unwrap_or_default(),
+                    headers: {
+                        let mut headers = std::collections::HashMap::new();
+                        match get_query("sni", &value).map(String::from) {
+                            Some(sni) => {
+                                headers.insert("Host".to_string(), sni);
+                            }
+                            None => {
+                                headers.insert(
+                                    "Host".to_string(),
+                                    value.host_str().unwrap().to_string(),
+                                );
+                            }
+                        }
+                        headers
+                    },
+                    max_early_data: None,
+                }),
+                _ => None,
+            })
+            .flatten()
+            .ok_or(Error::InvalidNetwork(
+                network_type.clone().unwrap_or_default().into(),
+            ))
+    }
+}

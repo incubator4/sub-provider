@@ -11,6 +11,9 @@ pub enum Error {
     #[error("Url parse error '{0}'")]
     UrlParse(#[from] url::ParseError),
 
+    #[error("Invalid network '{0}'")]
+    InvalidNetwork(String),
+
     #[error("Invalid tls")]
     InvalidTLS,
 
